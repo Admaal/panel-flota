@@ -4,71 +4,56 @@ import { env } from "../lib/env";
 
 const CLOUDFLARE_URL = env.CLOUDFLARE_URL;
 const TRUCK_ID = env.TRUCK_ID;
+const MAX_RETRIES = 3;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** Número máximo de reintentos antes de notificar al usuario. */
-const MAX_RETRIES = 3;
-
-/**
- * Realiza un fetch con reintentos y backoff exponencial.
- * Verifica `response.ok` y lanza un error si el servidor responde con 4xx/5xx.
- *
- * @param {string} url
- * @param {RequestInit} options
- * @param {number} retries - Número máximo de intentos (por defecto MAX_RETRIES).
- * @returns {Promise<Response>}
- * @throws {Error} Tras agotar todos los reintentos.
- */
 async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const response = await fetch(url, options);
-
       if (response.ok) return response;
-
-      // El servidor respondió con un error HTTP (4xx / 5xx)
       const error = new Error(`HTTP ${response.status} ${response.statusText}`);
       if (attempt === retries) throw error;
     } catch (err) {
-      // Captura tanto errores de red (TypeError: Failed to fetch)
-      // como los errores HTTP relanzados en la iteración anterior.
       if (attempt === retries) throw err;
     }
-
-    // Backoff exponencial: 1 s → 2 s → 4 s
-    const backoff = 1000 * Math.pow(2, attempt - 1);
-    await sleep(backoff);
+    await sleep(1000 * Math.pow(2, attempt - 1));
   }
 }
 
-/**
- * Hook que gestiona el simulador de viaje: recorre las coordenadas de la ruta
- * y envía pings al Cloudflare Worker en cada paso.
- *
- * @param {Function} addLog - Callback para emitir eventos hacia la consola de la UI.
- * @returns {{ isSimulating: boolean, toggleSimulation: Function, stopSimulation: Function }}
- */
+/** Simulador de viaje con soporte de pausa y reanudación. */
 export function useSimulation(addLog) {
   const [isSimulating, setIsSimulating] = useState(false);
+  const [resumeIndex, setResumeIndex] = useState(0);
   const simulationRef = useRef(false);
+  const currentIndexRef = useRef(0); // índice actual en la ruta
 
   const toggleSimulation = async () => {
-    if (isSimulating) {
-      setIsSimulating(false);
+    // Pausar
+    if (simulationRef.current) {
       simulationRef.current = false;
-      addLog("Viaje cancelado por el operador.", "info");
+      setIsSimulating(false);
+      setResumeIndex(currentIndexRef.current);
+      addLog("Viaje pausado por el operador.", "info");
       return;
     }
 
+    // Iniciar o reanudar
     setIsSimulating(true);
     simulationRef.current = true;
 
-    addLog("🚀 Telemetría activada. Viaje iniciado desde Toledo.", "success");
-
     const coordenadas = rutaData.features[0].geometry.coordinates;
+    const startIndex = currentIndexRef.current;
 
-    for (let i = 0; i < coordenadas.length; i++) {
+    if (startIndex === 0) {
+      addLog("🚀 Telemetría activada. Viaje iniciado desde Toledo.", "success");
+    } else {
+      addLog(`▶️ Viaje reanudado desde el punto ${startIndex + 1}/${coordenadas.length}.`, "info");
+    }
+
+    for (let i = startIndex; i < coordenadas.length; i++) {
+      currentIndexRef.current = i;
       if (!simulationRef.current) break;
 
       const [lon, lat] = coordenadas[i];
@@ -85,7 +70,6 @@ export function useSimulation(addLog) {
           }),
         });
       } catch (error) {
-        // Tras agotar reintentos, notificamos al usuario en la consola de eventos
         addLog(
           `${pingLabel} — Error de red tras ${MAX_RETRIES} intentos: ${error.message}`,
           "warning",
@@ -94,10 +78,9 @@ export function useSimulation(addLog) {
       }
 
       if (i === coordenadas.length - 1) {
-        addLog(
-          "🏁 Destino alcanzado: Peligros (Granada). Vehículo estacionado.",
-          "success",
-        );
+        addLog("🏁 Destino alcanzado: Peligros (Granada). Vehículo estacionado.", "success");
+        currentIndexRef.current = 0;
+        setResumeIndex(0);
       }
 
       await sleep(2000);
@@ -107,11 +90,13 @@ export function useSimulation(addLog) {
     simulationRef.current = false;
   };
 
-  /** Detiene la simulación sin log adicional (para uso programático, p.ej. reset). */
+  /** Detiene y resetea el índice al inicio (para el botón Resetear). */
   const stopSimulation = () => {
-    setIsSimulating(false);
     simulationRef.current = false;
+    setIsSimulating(false);
+    currentIndexRef.current = 0;
+    setResumeIndex(0);
   };
 
-  return { isSimulating, toggleSimulation, stopSimulation };
+  return { isSimulating, resumeIndex, toggleSimulation, stopSimulation };
 }

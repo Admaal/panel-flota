@@ -1,4 +1,3 @@
-/** Centralized access point for all required environment variables. */
 export const env = {
   SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
   SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
@@ -6,7 +5,6 @@ export const env = {
   TRUCK_ID: import.meta.env.VITE_TRUCK_ID,
 };
 
-/** Maps internal keys to their .env variable name for readable error messages. */
 const VAR_NAMES = {
   SUPABASE_URL: "VITE_SUPABASE_URL",
   SUPABASE_ANON_KEY: "VITE_SUPABASE_ANON_KEY",
@@ -14,14 +12,7 @@ const VAR_NAMES = {
   TRUCK_ID: "VITE_TRUCK_ID",
 };
 
-/**
- * Validates that all required environment variables are defined.
- *
- * Call this at the very start of the App component render so React's Error Boundary
- * can catch the error and display a helpful, styled message instead of a white screen.
- *
- * @throws {Error} If one or more required variables are missing.
- */
+/** Valida que todas las variables de entorno requeridas existan. */
 export function validateEnv() {
   const missing = Object.entries(VAR_NAMES)
     .filter(([key]) => !env[key])

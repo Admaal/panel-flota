@@ -1,13 +1,13 @@
 import { StrictMode, Component } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import { validateEnv } from "./lib/env";
 import App from "./App.jsx";
 
-/**
- * Error Boundary that intercepts errors thrown during render (e.g., missing env vars)
- * and displays a helpful, styled screen instead of a blank white page.
- * Class components are required by React for Error Boundaries.
- */
+// H6: Validar env UNA sola vez antes de montar React.
+// Si falla, el Error Boundary captura el error y muestra pantalla útil.
+validateEnv();
+
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);

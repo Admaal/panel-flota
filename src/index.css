@@ -1,10 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
+/* ─── Reset & Base ─────────────────────────────────────────────── */
 :root {
   font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color-scheme: light dark;
+  color-scheme: dark;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -25,7 +26,338 @@ body {
   background-color: #0f172a;
 }
 
-/* Custom Scrollbar para el panel de alertas */
+/* ─── Layout principal ──────────────────────────────────────────── */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: #0f172a;
+}
+
+/* ─── Sidebar ───────────────────────────────────────────────────── */
+.sidebar {
+  width: 360px;
+  min-width: 360px;
+  background-color: #1e293b;
+  border-right: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+  z-index: 1200;
+  transition:
+    transform 0.3s ease,
+    width 0.3s ease;
+}
+
+/* ─── Sidebar Header ────────────────────────────────────────────── */
+.sidebar-header {
+  padding: 24px;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  background-color: #3b82f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.5px;
+}
+
+.sidebar-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Botón de cierre dentro del sidebar (solo móvil) */
+.sidebar-close-btn {
+  display: none;
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #94a3b8;
+  flex-shrink: 0;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar-close-btn:hover {
+  background-color: #334155;
+  color: #f8fafc;
+}
+
+/* Botón hamburguesa externo (solo móvil, solo cuando sidebar está cerrado) */
+.menu-toggle {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1300;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #f8fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.2s;
+}
+
+.menu-toggle:hover {
+  background-color: #334155;
+}
+
+/* ─── Overlay oscuro (solo móvil cuando sidebar abierto) ────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1100;
+  backdrop-filter: blur(2px);
+}
+
+/* ─── Mapa ──────────────────────────────────────────────────────── */
+.map-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ─── Control Panel ─────────────────────────────────────────────── */
+.control-panel {
+  padding: 24px;
+  border-bottom: 1px solid #334155;
+  flex-shrink: 0;
+}
+
+.control-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.control-panel-title {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.active {
+  background-color: #10b981;
+  box-shadow: 0 0 10px #10b981;
+}
+
+.status-dot.inactive {
+  background-color: #ef4444;
+}
+
+.status-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-label.active {
+  color: #10b981;
+}
+
+.status-label.inactive {
+  color: #ef4444;
+}
+
+.control-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-primary {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
+  font-family: inherit;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-start {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: 1px solid #3b82f6;
+}
+
+.btn-stop {
+  background-color: transparent;
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary.enabled {
+  color: #cbd5e1;
+  border: 1px solid #64748b;
+}
+
+.btn-secondary.disabled {
+  color: #475569;
+  border: 1px solid #334155;
+  cursor: not-allowed;
+}
+
+/* ─── Event Console ─────────────────────────────────────────────── */
+.event-console {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.event-console-header {
+  padding: 20px 24px 10px 24px;
+  flex-shrink: 0;
+}
+
+.event-console-title {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.event-console-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.event-empty {
+  color: #475569;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+
+.event-item {
+  border-radius: 0 6px 6px 0;
+  padding: 12px;
+}
+
+.event-item-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.event-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.event-time {
+  color: #94a3b8;
+  font-size: 0.7rem;
+}
+
+.event-msg {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #f8fafc;
+}
+
+/* ─── Banner de desvío ──────────────────────────────────────────── */
+.deviation-banner {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background-color: #ef4444;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -40,7 +372,7 @@ body {
   background: #475569;
 }
 
-/* Ajuste sutil para los popups del mapa */
+/* ─── Leaflet popups ────────────────────────────────────────────── */
 .leaflet-popup-content-wrapper {
   background-color: #1e293b !important;
   color: #f8fafc !important;
@@ -49,4 +381,96 @@ body {
 }
 .leaflet-popup-tip {
   background-color: #1e293b !important;
+}
+
+/* ════════════════════════════════════════════════════════════════ */
+/*  RESPONSIVE                                                      */
+/* ════════════════════════════════════════════════════════════════ */
+
+/* ─── Tablet (≤ 900px): sidebar más estrecho ────────────────────── */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 300px;
+    min-width: 300px;
+  }
+
+  .sidebar-title {
+    font-size: 1.1rem;
+  }
+
+  .deviation-banner {
+    font-size: 0.8rem;
+    padding: 10px 18px;
+  }
+}
+
+/* ─── Móvil (≤ 640px): sidebar como drawer lateral ─────────────── */
+@media (max-width: 640px) {
+  /* Mostramos el botón hamburguesa */
+  .menu-toggle {
+    display: flex;
+  }
+
+  /* El sidebar se posiciona fuera de pantalla por defecto */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 300px;
+    min-width: 0;
+    transform: translateX(-100%);
+    z-index: 1200;
+    border-right: 1px solid #334155;
+  }
+
+  /* Cuando está abierto */
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Mostramos el overlay cuando el sidebar está abierto */
+  .sidebar-overlay.open {
+    display: block;
+  }
+
+  /* El mapa ocupa toda la pantalla */
+  .map-wrapper {
+    width: 100%;
+  }
+
+  .deviation-banner {
+    top: 70px; /* debajo del botón hamburguesa */
+    font-size: 0.78rem;
+    padding: 9px 16px;
+    max-width: calc(100vw - 32px);
+    white-space: normal;
+    text-align: center;
+  }
+
+  /* Ajustes internos del sidebar para móvil */
+  .sidebar-header {
+    padding: 20px;
+  }
+
+  .sidebar-close-btn {
+    display: flex;
+  }
+
+  .control-panel {
+    padding: 16px 20px;
+  }
+
+  .event-console-header {
+    padding: 14px 20px 8px 20px;
+  }
+
+  .event-console-list {
+    padding: 0 20px 20px 20px;
+  }
+
+  .btn-primary {
+    font-size: 0.9rem;
+    padding: 11px;
+  }
 }
