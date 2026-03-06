@@ -51,10 +51,14 @@ function App() {
   };
 
   const closeSidebar = () => setSidebarOpen(false);
+  
+  const isCustomerMode = Boolean(trackingId);
 
   return (
     <div className="app-layout">
-      {!sidebarOpen && (
+      
+      {/* 1. MODO ADMIN: Solo mostramos el botón del menú si NO es un cliente */}
+      {!sidebarOpen && !isCustomerMode && (
         <button
           className="menu-toggle"
           onClick={() => setSidebarOpen(true)}
@@ -68,20 +72,51 @@ function App() {
         </button>
       )}
 
-      <div
-        className={`sidebar-overlay ${sidebarOpen ? "open" : ""}`}
-        onClick={closeSidebar}
-      />
+      {/* 2. MODO ADMIN: El Sidebar completo solo se renderiza para administradores */}
+      {!isCustomerMode && (
+        <>
+          <div
+            className={`sidebar-overlay ${sidebarOpen ? "open" : ""}`}
+            onClick={closeSidebar}
+          />
+          <Sidebar
+            isSimulating={isSimulating}
+            alertsLog={alertsLog}
+            onToggle={handleToggle}
+            onReset={handleReset}
+            isOpen={sidebarOpen}
+            onClose={closeSidebar}
+          />
+        </>
+      )}
 
-      <Sidebar
-        isSimulating={isSimulating}
-        alertsLog={alertsLog}
-        onToggle={handleToggle}
-        onReset={handleReset}
-        isOpen={sidebarOpen}
-        onClose={closeSidebar}
-      />
+      {/* 3. MODO CLIENTE: Una tarjeta flotante bonita y de solo lectura */}
+      {isCustomerMode && (
+        <div style={{
+          position: "absolute", top: "20px", left: "20px", zIndex: 1000, 
+          backgroundColor: "white", padding: "20px", borderRadius: "12px", 
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0",
+          minWidth: "250px"
+        }}>
+          <h3 style={{ margin: "0 0 12px 0", fontSize: "18px", color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
+            📦 Rastreo de Envío
+          </h3>
+          <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#64748b" }}>
+            Pedido Ref: <strong style={{ color: "#0f172a" }}>{trackingId.split("-")[0].toUpperCase()}</strong>
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "16px", padding: "10px", backgroundColor: "#f8fafc", borderRadius: "8px" }}>
+            <span style={{ 
+              width: "12px", height: "12px", borderRadius: "50%", 
+              backgroundColor: isSimulating ? "#22c55e" : "#eab308" 
+            }}></span>
+            <span style={{ fontSize: "14px", fontWeight: "600", color: isSimulating ? "#15803d" : "#ca8a04" }}>
+              {isSimulating ? "En tránsito hacia Peligros" : "Preparando ruta..."}
+            </span>
+          </div>
+        </div>
+      )}
 
+      {/* El mapa es común para ambos modos */}
       <FleetMap truckPosition={truckPosition} isDeviated={isDeviated} />
     </div>
   );
