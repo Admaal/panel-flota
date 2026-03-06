@@ -23,6 +23,7 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
 
 export function useSimulation(addLog, trackingId) {
   const [isSimulating, setIsSimulating] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
   const [resumeIndex, setResumeIndex] = useState(0);
   const simulationRef = useRef(false);
   const currentIndexRef = useRef(0);
@@ -39,6 +40,7 @@ export function useSimulation(addLog, trackingId) {
     }
 
     setIsSimulating(true);
+    setIsFinished(false);
     simulationRef.current = true;
 
     const coordenadas = rutaData.features[0].geometry.coordinates;
@@ -78,6 +80,7 @@ export function useSimulation(addLog, trackingId) {
         addLog("🏁 Destino alcanzado: Peligros (Granada). Vehículo estacionado.", "success");
         currentIndexRef.current = 0;
         setResumeIndex(0);
+        setIsFinished(true);
       }
 
       await sleep(2000);
@@ -90,9 +93,10 @@ export function useSimulation(addLog, trackingId) {
   const stopSimulation = () => {
     simulationRef.current = false;
     setIsSimulating(false);
+    setIsFinished(false);
     currentIndexRef.current = 0;
     setResumeIndex(0);
   };
 
-  return { isSimulating, resumeIndex, toggleSimulation, stopSimulation };
+  return { isSimulating, isFinished, resumeIndex, toggleSimulation, stopSimulation };
 }

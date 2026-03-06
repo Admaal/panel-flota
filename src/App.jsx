@@ -22,7 +22,7 @@ function App() {
   const { truckPosition, isDeviated, resetPosition, resetDeviation } =
     useSupabaseRealtime(addLog, trackingId);
 
-  const { isSimulating, resumeIndex, toggleSimulation, stopSimulation } =
+  const { isSimulating, isFinished, resumeIndex, toggleSimulation, stopSimulation } =
     useSimulation(addLog, trackingId);
 
   useEffect(() => {
@@ -107,10 +107,10 @@ function App() {
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "16px", padding: "10px", backgroundColor: "#f8fafc", borderRadius: "8px" }}>
             <span style={{ 
               width: "12px", height: "12px", borderRadius: "50%", 
-              backgroundColor: isSimulating ? "#22c55e" : "#eab308" 
+              backgroundColor: isFinished ? "#3b82f6" : (isSimulating ? "#22c55e" : "#eab308") 
             }}></span>
-            <span style={{ fontSize: "14px", fontWeight: "600", color: isSimulating ? "#15803d" : "#ca8a04" }}>
-              {isSimulating ? "En tránsito hacia Peligros" : "Preparando ruta..."}
+            <span style={{ fontSize: "14px", fontWeight: "600", color: isFinished ? "#1d4ed8" : (isSimulating ? "#15803d" : "#ca8a04") }}>
+              {isFinished ? "¡Pedido Entregado con éxito!" : (isSimulating ? "En tránsito hacia Peligros" : "Preparando ruta...")}
             </span>
           </div>
         </div>
