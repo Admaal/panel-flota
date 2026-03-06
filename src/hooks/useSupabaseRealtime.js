@@ -1,23 +1,32 @@
 import { useEffect, useState } from "react";
 import { getSupabase, STARTING_POINT } from "../lib/supabase";
+import { env } from "../lib/env";
 
-/** Suscripción realtime a la tabla `telemetry` de Supabase. */
-export function useSupabaseRealtime(addLog) {
+export function useSupabaseRealtime(addLog, trackingId) {
   const [truckPosition, setTruckPosition] = useState(STARTING_POINT);
   const [isDeviated, setIsDeviated] = useState(false);
+  
+  const activeTruckId = trackingId || env.TRUCK_ID;
 
   useEffect(() => {
     const supabase = getSupabase();
 
     const channel = supabase
-      .channel("schema-db-changes")
+      .channel(`telemetry-${activeTruckId}`) 
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "telemetry" },
+        { 
+          event: "INSERT", 
+          schema: "public", 
+          table: "telemetry",
+          filter: `truck_id=eq.${activeTruckId}` 
+        },
         (payload) => {
-          const { lat, lon, is_deviated: deviated } = payload.new;
+          const { lat, lon, is_deviated: deviated, truck_id } = payload.new;
 
-          // H9: usar != null para no ignorar coordenada 0
+
+          if (truck_id !== activeTruckId) return;
+
           if (lat != null && lon != null) {
             setTruckPosition([lat, lon]);
             setIsDeviated(deviated);
@@ -34,7 +43,7 @@ export function useSupabaseRealtime(addLog) {
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, [addLog]);
+  }, [addLog, activeTruckId]);
 
   const resetPosition = () => {
     setTruckPosition(STARTING_POINT);

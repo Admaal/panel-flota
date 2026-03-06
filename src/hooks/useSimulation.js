@@ -3,7 +3,6 @@ import rutaData from "../ruta_toledo_peligros.json";
 import { env } from "../lib/env";
 
 const CLOUDFLARE_URL = env.CLOUDFLARE_URL;
-const TRUCK_ID = env.TRUCK_ID;
 const MAX_RETRIES = 3;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -22,15 +21,15 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
   }
 }
 
-/** Simulador de viaje con soporte de pausa y reanudación. */
-export function useSimulation(addLog) {
+export function useSimulation(addLog, trackingId) {
   const [isSimulating, setIsSimulating] = useState(false);
   const [resumeIndex, setResumeIndex] = useState(0);
   const simulationRef = useRef(false);
-  const currentIndexRef = useRef(0); // índice actual en la ruta
+  const currentIndexRef = useRef(0);
+
+  const activeTruckId = trackingId || env.TRUCK_ID;
 
   const toggleSimulation = async () => {
-    // Pausar
     if (simulationRef.current) {
       simulationRef.current = false;
       setIsSimulating(false);
@@ -39,7 +38,6 @@ export function useSimulation(addLog) {
       return;
     }
 
-    // Iniciar o reanudar
     setIsSimulating(true);
     simulationRef.current = true;
 
@@ -64,7 +62,7 @@ export function useSimulation(addLog) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            truck_id: TRUCK_ID,
+            truck_id: activeTruckId, 
             location: { lon, lat },
             timestamp: new Date().toISOString(),
           }),
@@ -74,7 +72,6 @@ export function useSimulation(addLog) {
           `${pingLabel} — Error de red tras ${MAX_RETRIES} intentos: ${error.message}`,
           "warning",
         );
-        console.error(`[useSimulation] ${pingLabel} fallido:`, error);
       }
 
       if (i === coordenadas.length - 1) {
@@ -90,7 +87,6 @@ export function useSimulation(addLog) {
     simulationRef.current = false;
   };
 
-  /** Detiene y resetea el índice al inicio (para el botón Resetear). */
   const stopSimulation = () => {
     simulationRef.current = false;
     setIsSimulating(false);

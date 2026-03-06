@@ -1,15 +1,18 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSupabaseRealtime } from "./hooks/useSupabaseRealtime";
 import { useSimulation } from "./hooks/useSimulation";
 import { Sidebar } from "./components/Sidebar";
 import { FleetMap } from "./components/FleetMap";
 
-// H8: Contador incremental para IDs únicos (evita duplicados con Date.now)
 let logIdCounter = 0;
 
 function App() {
   const [alertsLog, setAlertsLog] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const autoStarted = useRef(false);
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const trackingId = urlParams.get("tracking_id");
 
   const addLog = useCallback((msg, type = "info") => {
     const time = new Date().toLocaleTimeString();
@@ -17,13 +20,23 @@ function App() {
   }, []);
 
   const { truckPosition, isDeviated, resetPosition, resetDeviation } =
-    useSupabaseRealtime(addLog);
+    useSupabaseRealtime(addLog, trackingId);
 
   const { isSimulating, resumeIndex, toggleSimulation, stopSimulation } =
-    useSimulation(addLog);
+    useSimulation(addLog, trackingId);
+
+  useEffect(() => {
+    if (trackingId && !autoStarted.current) {
+      autoStarted.current = true;
+      addLog(`Rastreando pedido: ${trackingId.split("-")[0].toUpperCase()}`, "success");
+      
+      setTimeout(() => {
+        toggleSimulation();
+      }, 1500);
+    }
+  }, [trackingId, toggleSimulation, addLog]);
 
   const handleToggle = () => {
-    // Solo limpiar en arranque limpio, no al reanudar
     if (!isSimulating && resumeIndex === 0) {
       setAlertsLog([]);
       resetDeviation();
