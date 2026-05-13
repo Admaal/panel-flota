@@ -5,25 +5,24 @@ import { env } from "../lib/env";
 export function useSupabaseRealtime(addLog, trackingId) {
   const [truckPosition, setTruckPosition] = useState(STARTING_POINT);
   const [isDeviated, setIsDeviated] = useState(false);
-  
+
   const activeTruckId = trackingId || env.TRUCK_ID;
 
   useEffect(() => {
     const supabase = getSupabase();
 
     const channel = supabase
-      .channel(`telemetry-${activeTruckId}`) 
+      .channel(`telemetry-${activeTruckId}`)
       .on(
         "postgres_changes",
-        { 
-          event: "INSERT", 
-          schema: "public", 
+        {
+          event: "INSERT",
+          schema: "app",
           table: "telemetry",
-          filter: `truck_id=eq.${activeTruckId}` 
+          filter: `truck_id=eq.${activeTruckId}`,
         },
         (payload) => {
           const { lat, lon, is_deviated: deviated, truck_id } = payload.new;
-
 
           if (truck_id !== activeTruckId) return;
 

@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import { validateEnv } from "./lib/env";
 import App from "./App.jsx";
+import { GearIcon } from "./components/Icons";
 
 // H6: Validar env UNA sola vez antes de montar React.
 // Si falla, el Error Boundary captura el error y muestra pantalla útil.
@@ -51,7 +52,22 @@ class ErrorBoundary extends Component {
                 marginBottom: "20px",
               }}
             >
-              <span style={{ fontSize: "1.75rem" }}>⚙️</span>
+              <div
+                style={{
+                  width: "44px",
+                  height: "44px",
+                  borderRadius: "12px",
+                  display: "grid",
+                  placeItems: "center",
+                  background:
+                    "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(15,23,42,0.9))",
+                  border: "1px solid rgba(148,163,184,0.25)",
+                  color: "#e2e8f0",
+                  flexShrink: 0,
+                }}
+              >
+                <GearIcon size={20} />
+              </div>
               <div>
                 <h1
                   style={{

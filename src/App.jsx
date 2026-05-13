@@ -3,6 +3,7 @@ import { useSupabaseRealtime } from "./hooks/useSupabaseRealtime";
 import { useSimulation } from "./hooks/useSimulation";
 import { Sidebar } from "./components/Sidebar";
 import { FleetMap } from "./components/FleetMap";
+import { PackageIcon } from "./components/Icons";
 
 let logIdCounter = 0;
 
@@ -22,14 +23,22 @@ function App() {
   const { truckPosition, isDeviated, resetPosition, resetDeviation } =
     useSupabaseRealtime(addLog, trackingId);
 
-  const { isSimulating, isFinished, resumeIndex, toggleSimulation, stopSimulation } =
-    useSimulation(addLog, trackingId);
+  const {
+    isSimulating,
+    isFinished,
+    resumeIndex,
+    toggleSimulation,
+    stopSimulation,
+  } = useSimulation(addLog, trackingId);
 
   useEffect(() => {
     if (trackingId && !autoStarted.current) {
       autoStarted.current = true;
-      addLog(`Rastreando pedido: ${trackingId.split("-")[0].toUpperCase()}`, "success");
-      
+      addLog(
+        `Rastreando pedido: ${trackingId.split("-")[0].toUpperCase()}`,
+        "success",
+      );
+
       setTimeout(() => {
         toggleSimulation();
       }, 1500);
@@ -51,12 +60,11 @@ function App() {
   };
 
   const closeSidebar = () => setSidebarOpen(false);
-  
+
   const isCustomerMode = Boolean(trackingId);
 
   return (
     <div className="app-layout">
-      
       {/* 1. MODO ADMIN: Solo mostramos el botón del menú si NO es un cliente */}
       {!sidebarOpen && !isCustomerMode && (
         <button
@@ -64,7 +72,15 @@ function App() {
           onClick={() => setSidebarOpen(true)}
           aria-label="Abrir menú"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          >
             <line x1="3" y1="6" x2="21" y2="6" />
             <line x1="3" y1="12" x2="21" y2="12" />
             <line x1="3" y1="18" x2="21" y2="18" />
@@ -92,25 +108,95 @@ function App() {
 
       {/* 3. MODO CLIENTE: Una tarjeta flotante bonita y de solo lectura */}
       {isCustomerMode && (
-        <div style={{
-          position: "absolute", top: "20px", left: "20px", zIndex: 1000, 
-          backgroundColor: "white", padding: "20px", borderRadius: "12px", 
-          boxShadow: "0 10px 25px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0",
-          minWidth: "250px"
-        }}>
-          <h3 style={{ margin: "0 0 12px 0", fontSize: "18px", color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
-            📦 Rastreo de Envío
+        <div
+          style={{
+            position: "absolute",
+            top: "20px",
+            left: "20px",
+            zIndex: 1000,
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+            border: "1px solid #e2e8f0",
+            minWidth: "250px",
+          }}
+        >
+          <h3
+            style={{
+              margin: "0 0 12px 0",
+              fontSize: "18px",
+              color: "#0f172a",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <span
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "10px",
+                display: "grid",
+                placeItems: "center",
+                background:
+                  "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(15,23,42,0.04))",
+                color: "#1d4ed8",
+                border: "1px solid rgba(59,130,246,0.15)",
+                flexShrink: 0,
+              }}
+            >
+              <PackageIcon size={16} />
+            </span>
+            Rastreo de Envío
           </h3>
-          <p style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#64748b" }}>
-            Pedido Ref: <strong style={{ color: "#0f172a" }}>{trackingId.split("-")[0].toUpperCase()}</strong>
+          <p
+            style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#64748b" }}
+          >
+            Pedido Ref:{" "}
+            <strong style={{ color: "#0f172a" }}>
+              {trackingId.split("-")[0].toUpperCase()}
+            </strong>
           </p>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "16px", padding: "10px", backgroundColor: "#f8fafc", borderRadius: "8px" }}>
-            <span style={{ 
-              width: "12px", height: "12px", borderRadius: "50%", 
-              backgroundColor: isFinished ? "#3b82f6" : (isSimulating ? "#22c55e" : "#eab308") 
-            }}></span>
-            <span style={{ fontSize: "14px", fontWeight: "600", color: isFinished ? "#1d4ed8" : (isSimulating ? "#15803d" : "#ca8a04") }}>
-              {isFinished ? "¡Pedido Entregado con éxito!" : (isSimulating ? "En tránsito hacia Peligros" : "Preparando ruta...")}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              marginTop: "16px",
+              padding: "10px",
+              backgroundColor: "#f8fafc",
+              borderRadius: "8px",
+            }}
+          >
+            <span
+              style={{
+                width: "12px",
+                height: "12px",
+                borderRadius: "50%",
+                backgroundColor: isFinished
+                  ? "#3b82f6"
+                  : isSimulating
+                    ? "#22c55e"
+                    : "#eab308",
+              }}
+            ></span>
+            <span
+              style={{
+                fontSize: "14px",
+                fontWeight: "600",
+                color: isFinished
+                  ? "#1d4ed8"
+                  : isSimulating
+                    ? "#15803d"
+                    : "#ca8a04",
+              }}
+            >
+              {isFinished
+                ? "¡Pedido Entregado con éxito!"
+                : isSimulating
+                  ? "En tránsito hacia Peligros"
+                  : "Preparando ruta..."}
             </span>
           </div>
         </div>

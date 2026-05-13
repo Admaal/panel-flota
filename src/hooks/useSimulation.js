@@ -47,9 +47,12 @@ export function useSimulation(addLog, trackingId) {
     const startIndex = currentIndexRef.current;
 
     if (startIndex === 0) {
-      addLog("🚀 Telemetría activada. Viaje iniciado desde Toledo.", "success");
+      addLog("Telemetría activada. Viaje iniciado desde Toledo.", "success");
     } else {
-      addLog(`▶️ Viaje reanudado desde el punto ${startIndex + 1}/${coordenadas.length}.`, "info");
+      addLog(
+        `Viaje reanudado desde el punto ${startIndex + 1}/${coordenadas.length}.`,
+        "info",
+      );
     }
 
     for (let i = startIndex; i < coordenadas.length; i++) {
@@ -64,7 +67,7 @@ export function useSimulation(addLog, trackingId) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            truck_id: activeTruckId, 
+            truck_id: activeTruckId,
             location: { lon, lat },
             timestamp: new Date().toISOString(),
           }),
@@ -77,7 +80,10 @@ export function useSimulation(addLog, trackingId) {
       }
 
       if (i === coordenadas.length - 1) {
-        addLog("🏁 Destino alcanzado: Peligros (Granada). Vehículo estacionado.", "success");
+        addLog(
+          "Destino alcanzado: Peligros (Granada). Vehículo estacionado.",
+          "success",
+        );
         currentIndexRef.current = 0;
         setResumeIndex(0);
         setIsFinished(true);
@@ -98,5 +104,11 @@ export function useSimulation(addLog, trackingId) {
     setResumeIndex(0);
   };
 
-  return { isSimulating, isFinished, resumeIndex, toggleSimulation, stopSimulation };
+  return {
+    isSimulating,
+    isFinished,
+    resumeIndex,
+    toggleSimulation,
+    stopSimulation,
+  };
 }

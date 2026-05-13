@@ -6,7 +6,9 @@ let _supabase = null;
 
 export function getSupabase() {
   if (!_supabase) {
-    _supabase = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
+    _supabase = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+      db: { schema: "app" },
+    });
   }
   return _supabase;
 }
